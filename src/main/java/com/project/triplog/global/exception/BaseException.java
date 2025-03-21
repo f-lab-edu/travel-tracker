@@ -1,4 +1,4 @@
-package com.example.travel_tracker.global.exception;
+package com.project.triplog.global.exception;
 
 import org.springframework.http.HttpStatus;
 
