@@ -10,7 +10,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(BaseException.class)
 	public ResponseEntity<ErrorResponse> handleBaseException(BaseException exception) {
 		ErrorResponse errorResponse = ErrorResponse.of(exception.getStatus(), exception.getErrorCode(),
-			exception.getMessage(), exception.getClass().getName());
+			exception.getMessage());
 
 		return ResponseEntity.status(exception.getStatus()).body(errorResponse);
 	}
