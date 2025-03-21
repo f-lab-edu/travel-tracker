@@ -1,3 +1,10 @@
 spring:
   application:
-    name: travel-tracker
+    name: triplog
+  profiles:
+    active: local
+  config:
+    import: optional:file:.env[.properties]
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
