@@ -1,5 +1,8 @@
 package com.project.triplog.global.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
 	UNKNOWN_ERROR("UNKNOWN_ERROR", "알 수 없는 오류가 발생하였습니다.");
 
