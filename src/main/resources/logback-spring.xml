@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- 1. 전역 프로퍼티 설정 -->
+    <!-- LOG_PATH: dev 환경에서 파일 로그가 저장될 경로 -->
+    <property name="LOG_PATH" value="/var/logs/travel_tracker"/>
+    <!-- Console 로그 패턴  연도-월-일 시:분:초:밀리초 [스레드 이름] 로그 레벨 로거이름 - 메시지-->
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- 2. 모든 환경에서 공통으로 사용하는 Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 3. dev 환경에서만 활성화되는 File Appender -->
+    <springProfile name="dev">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- 파일 로그가 저장될 위치: LOG_PATH 프로퍼티를 사용하여 사용자 지정 경로로 로그 파일을 생성 -->
+            <file>${LOG_PATH}/app.log</file>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+            <!-- SizeAndTimeBasedRollingPolicy: 파일 크기와 날짜 기준으로 로그 파일 롤링 -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <!-- 롤링 파일 명명 규칙 -->
+                <fileNamePattern>${LOG_PATH}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <!-- 각 파일 최대 크기 -->
+                <maxFileSize>10MB</maxFileSize>
+                <!-- 최대 보관 기간(일) -->
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+        </appender>
+    </springProfile>
+
+    <!-- 4. Root Logger 설정 -->
+    <!-- 모든 환경에서 Console Appender는 항상 포함 -->
+    <!-- dev 환경일 경우 File Appender도 추가 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <springProfile name="dev">
+            <appender-ref ref="FILE"/>
+        </springProfile>
+    </root>
+
+</configuration>
