@@ -48,7 +48,7 @@ public class EmailVerificationService {
 
 	public void sendVerificationEmail(EmailRequest emailRequest) {
 		String token = generateToken(emailRequest.getEmail());
-		String verificationUrl = "http://localhost:8080/api/v1/members/email-verification?email="
+		String verificationUrl = "http://localhost:8080/users/email/verification?email="
 			+ URLEncoder.encode(emailRequest.getEmail(), StandardCharsets.UTF_8)
 			+ "&token=" + token;
 		String subject = "회원가입 : 이메일 인증";
