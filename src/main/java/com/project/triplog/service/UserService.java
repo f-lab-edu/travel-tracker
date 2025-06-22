@@ -15,12 +15,14 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailVerificationService emailVerificationService;
 
 	public boolean isExistUsername(String username) {
 		return userRepository.existsByUsername(username);
 	}
 
 	public void join(JoinRequest joinRequest) {
+		emailVerificationService.checkVerified(joinRequest.getEmail());
 		if (isExistUsername(joinRequest.getUsername())) {
 			throw new DuplicationException("이미 존재하는 사용자 이름입니다.");
 		}
@@ -31,6 +33,8 @@ public class UserService {
 		String newPassword = encodingPassword(joinRequest.getPassword());
 		User user = User.from(joinRequest, newPassword);
 		userRepository.save(user);
+
+		emailVerificationService.deleteVerification(joinRequest.getEmail());
 	}
 
 	private String encodingPassword(String password) {

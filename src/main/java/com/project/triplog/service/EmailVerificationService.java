@@ -65,4 +65,16 @@ public class EmailVerificationService {
             throw new EmailSendException();
         }
     }
+
+    public void checkVerified(String email) {
+        EmailVerification emailVerification = emailVerificationRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailVerifiedException());
+        if (!emailVerification.isVerified()) {
+            throw new EmailVerifiedException();
+        }
+    }
+
+    public void deleteVerification(String email) {
+        emailVerificationRepository.deleteByEmail(email);
+    }
 }
