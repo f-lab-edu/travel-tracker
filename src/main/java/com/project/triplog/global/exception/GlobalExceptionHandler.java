@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -37,6 +38,17 @@ public class GlobalExceptionHandler {
 
 		ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_VALUE.getCode(),
 			ErrorCode.INVALID_VALUE.getMessage(), fieldErrors);
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
+
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(
+		MissingServletRequestParameterException exception) {
+
+		ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST,
+			ErrorCode.PARAMETER_MISSING.getCode(),
+			ErrorCode.PARAMETER_MISSING.getMessage());
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
