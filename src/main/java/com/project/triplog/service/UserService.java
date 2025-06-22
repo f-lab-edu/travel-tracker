@@ -1,5 +1,6 @@
 package com.project.triplog.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.User;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	public boolean isExistUsername(String username) {
 		return userRepository.existsByUsername(username);
@@ -25,8 +27,14 @@ public class UserService {
 		if (isExistEmail(joinRequest.getEmail())) {
 			throw new DuplicationException("이미 존재하는 이메일입니다.");
 		}
-		User user = User.from(joinRequest);
+
+		String newPassword = encodingPassword(joinRequest.getPassword());
+		User user = User.from(joinRequest, newPassword);
 		userRepository.save(user);
+	}
+
+	private String encodingPassword(String password) {
+		return passwordEncoder.encode(password);
 	}
 
 	private boolean isExistEmail(String email) {

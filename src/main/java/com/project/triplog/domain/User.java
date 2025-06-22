@@ -31,12 +31,12 @@ public class User {
 	@CreatedDate
 	private LocalDateTime createdAt;
 
-	public static User from(JoinRequest joinRequest) {
+	public static User from(JoinRequest joinRequest, String newPassword) {
 		User user = new User();
 		user.username = joinRequest.getUsername();
 		user.name = joinRequest.getName();
 		user.email = joinRequest.getEmail();
-		user.password = joinRequest.getPassword();
+		user.password = newPassword;
 		return user;
 	}
 }
