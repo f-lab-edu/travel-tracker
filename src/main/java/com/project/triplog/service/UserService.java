@@ -1,10 +1,12 @@
 package com.project.triplog.service;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.User;
 import com.project.triplog.dto.JoinRequest;
+import com.project.triplog.dto.LoginRequest;
 import com.project.triplog.exception.DuplicationException;
 import com.project.triplog.repository.UserRepository;
 
@@ -43,5 +45,14 @@ public class UserService {
 
 	private boolean isExistEmail(String email) {
 		return userRepository.existsByEmail(email);
+	}
+
+	public void login(LoginRequest loginRequest) {
+		User user = userRepository.findByUsername(loginRequest.getUsername())
+			.orElseThrow(() -> new BadCredentialsException("사용자를 찾을 수 없습니다."));
+
+		if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+			throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+		}
 	}
 }
