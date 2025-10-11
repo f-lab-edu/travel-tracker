@@ -8,7 +8,7 @@ import com.project.triplog.domain.User;
 import com.project.triplog.dto.user.JoinRequest;
 import com.project.triplog.dto.user.LoginRequest;
 import com.project.triplog.dto.user.LoginResponse;
-import com.project.triplog.global.exception.CustomException;
+import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
 import com.project.triplog.security.JwtTokenProvider;
@@ -23,17 +23,21 @@ public class UserService {
 	private final EmailVerificationService emailVerificationService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-	public boolean isExistUsername(String username) {
-		return userRepository.existsByUserId(username);
+	public boolean isExistUserId(String userId) {
+		return userRepository.existsByUserId(userId);
+	}
+
+	public boolean isExistEmail(String email) {
+		return userRepository.existsByEmail(email);
 	}
 
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
-		if (isExistUsername(joinRequest.getUserId())) {
-			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
+		if (isExistUserId(joinRequest.getUserId())) {
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 사용자 아이디입니다.");
 		}
-		if (userRepository.existsByEmail(joinRequest.getEmail())) {
-			throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+		if (isExistEmail(joinRequest.getEmail())) {
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 이메일입니다.");
 		}
 
 		String newPassword = encodingPassword(joinRequest.getPassword());
@@ -55,10 +59,8 @@ public class UserService {
 			throw new BadCredentialsException("아이디 또는 비밀번호가 틀렸습니다.");
 		}
 
-		String token = jwtTokenProvider.generateToken(user.getUserId());
+		String token = jwtTokenProvider.createToken(user.getUserId());
 
-		return LoginResponse.builder()
-			.token(token)
-			.build();
+		return LoginResponse.of(token);
 	}
 }
