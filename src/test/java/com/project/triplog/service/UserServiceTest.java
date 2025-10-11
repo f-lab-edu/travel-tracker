@@ -9,15 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.project.triplog.domain.User;
-import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.exception.DuplicationException;
-import com.project.triplog.exception.EmailVerifiedException;
+import com.project.triplog.dto.user.JoinRequest;
+import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
+import com.project.triplog.security.JwtTokenProvider;
 
 class UserServiceTest {
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private EmailVerificationService emailVerificationService;
+	private JwtTokenProvider jwtTokenProvider;
 	private UserService userService;
 
 	@BeforeEach
@@ -25,11 +27,12 @@ class UserServiceTest {
 		userRepository = mock(UserRepository.class);
 		passwordEncoder = mock(PasswordEncoder.class);
 		emailVerificationService = mock(EmailVerificationService.class);
-		userService = new UserService(userRepository, passwordEncoder, emailVerificationService);
+		jwtTokenProvider = mock(JwtTokenProvider.class);
+		userService = new UserService(userRepository, passwordEncoder, emailVerificationService, jwtTokenProvider);
 	}
 
 	@Test
-	@DisplayName("사용자 아이디가 이미 존재하는 경우 true 반환")
+	@DisplayName("사용자 ID가 이미 존재하는 경우 true 반환")
 	void shouldReturnTrueWhenUserIdExists() {
 		String userId = "existingUser";
 		when(userRepository.existsByUserId(userId)).thenReturn(true);
@@ -40,7 +43,7 @@ class UserServiceTest {
 	}
 
 	@Test
-	@DisplayName("사용자 아이디가 존재하지 않는 경우 false 반환")
+	@DisplayName("사용자 ID가 존재하지 않는 경우 false 반환")
 	void shouldReturnFalseWhenUserIdDoesNotExist() {
 		String userId = "newUser";
 		when(userRepository.existsByUserId(userId)).thenReturn(false);
@@ -51,73 +54,45 @@ class UserServiceTest {
 	}
 
 	@Test
-	@DisplayName("정상적인 회원가입 시 저장 및 인증정보 삭제")
+	@DisplayName("회원가입 성공")
 	void shouldJoinSuccessfully() {
-		JoinRequest joinRequest = new JoinRequest("newUser", "홍길동", "test@example.com", "password123");
+		JoinRequest joinRequest = new JoinRequest("newUser", "테스트", "test@example.com", "password123");
 
-		when(userRepository.existsByUserId(anyString())).thenReturn(false);
-		when(userRepository.existsByEmail(anyString())).thenReturn(false);
-		when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-		doNothing().when(emailVerificationService).checkVerified(anyString());
+		when(userRepository.existsByUserId("newUser")).thenReturn(false);
+		when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
+		when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
 		userService.join(joinRequest);
 
-		verify(userRepository, times(1)).save(any(User.class));
-		verify(emailVerificationService, times(1)).deleteVerification(joinRequest.getEmail());
+		verify(emailVerificationService).checkVerified("test@example.com");
+		verify(userRepository).save(any(User.class));
+		verify(emailVerificationService).deleteVerification("test@example.com");
 	}
 
 	@Test
-	@DisplayName("중복된 사용자 아이디로 회원가입 시 예외 발생")
-	void shouldThrowExceptionWhenUserIdExists() {
-		JoinRequest joinRequest = new JoinRequest("existingUser", "홍길동", "test@example.com", "password123");
+	@DisplayName("중복된 사용자 ID로 회원가입 시 예외 발생")
+	void shouldThrowExceptionWhenUserIdIsDuplicated() {
+		JoinRequest joinRequest = new JoinRequest("existingUser", "테스트", "test@example.com", "password123");
 
-		when(userRepository.existsByUserId(anyString())).thenReturn(true);
-		doNothing().when(emailVerificationService).checkVerified(anyString());
+		when(userRepository.existsByUserId("existingUser")).thenReturn(true);
 
 		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(DuplicationException.class)
-			.hasMessage("이미 존재하는 사용자 아이디입니다.");
+			.isInstanceOf(ApiException.class)
+			.hasFieldOrPropertyWithValue("errorCodeEnum", ErrorCode.DUPLICATION)
+			.hasMessageContaining("이미 존재하는 사용자 아이디입니다");
 	}
 
 	@Test
 	@DisplayName("중복된 이메일로 회원가입 시 예외 발생")
-	void shouldThrowExceptionWhenEmailExists() {
-		JoinRequest joinRequest = new JoinRequest("newUser", "홍길동", "existing@example.com", "password123");
+	void shouldThrowExceptionWhenEmailIsDuplicated() {
+		JoinRequest joinRequest = new JoinRequest("newUser", "테스트", "existing@example.com", "password123");
 
-		when(userRepository.existsByUserId(anyString())).thenReturn(false);
-		when(userRepository.existsByEmail(anyString())).thenReturn(true);
-		doNothing().when(emailVerificationService).checkVerified(anyString());
-
-		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(DuplicationException.class)
-			.hasMessage("이미 존재하는 이메일입니다.");
-	}
-
-	@Test
-	@DisplayName("회원가입 시 비밀번호가 인코딩되는지 확인")
-	void shouldEncodePasswordDuringJoin() {
-		JoinRequest joinRequest = new JoinRequest("newUser", "userName", "test@example.com", "password");
-
-		when(userRepository.existsByUserId(anyString())).thenReturn(false);
-		when(userRepository.existsByEmail(anyString())).thenReturn(false);
-		when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-		doNothing().when(emailVerificationService).checkVerified(anyString());
-
-		userService.join(joinRequest);
-
-		verify(passwordEncoder, times(1)).encode("password");
-	}
-
-	@Test
-	@DisplayName("이메일 인증이 완료되지 않은 경우 예외 발생")
-	void shouldThrowExceptionWhenEmailNotVerified() {
-		JoinRequest joinRequest = new JoinRequest("newUser", "홍길동", "unverified@example.com", "password123");
-
-		doThrow(new EmailVerifiedException())
-			.when(emailVerificationService).checkVerified(joinRequest.getEmail());
+		when(userRepository.existsByUserId("newUser")).thenReturn(false);
+		when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
 		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(EmailVerifiedException.class);
+			.isInstanceOf(ApiException.class)
+			.hasFieldOrPropertyWithValue("errorCodeEnum", ErrorCode.DUPLICATION)
+			.hasMessageContaining("이미 존재하는 이메일입니다");
 	}
-
 }

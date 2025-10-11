@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.project.triplog.dto.JoinRequest;
+import com.project.triplog.dto.user.JoinRequest;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

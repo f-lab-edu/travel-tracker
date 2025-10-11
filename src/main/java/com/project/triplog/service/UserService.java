@@ -5,10 +5,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.User;
-import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.dto.LoginRequest;
-import com.project.triplog.dto.LoginResponse;
-import com.project.triplog.exception.DuplicationException;
+import com.project.triplog.dto.user.JoinRequest;
+import com.project.triplog.dto.user.LoginRequest;
+import com.project.triplog.dto.user.LoginResponse;
+import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
 import com.project.triplog.security.JwtTokenProvider;
 
@@ -33,10 +34,10 @@ public class UserService {
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
 		if (isExistUserId(joinRequest.getUserId())) {
-			throw new DuplicationException("이미 존재하는 사용자 아이디입니다.");
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 사용자 아이디입니다.");
 		}
 		if (isExistEmail(joinRequest.getEmail())) {
-			throw new DuplicationException("이미 존재하는 이메일입니다.");
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 이메일입니다.");
 		}
 
 		String newPassword = encodingPassword(joinRequest.getPassword());
@@ -52,13 +53,14 @@ public class UserService {
 
 	public LoginResponse login(LoginRequest loginRequest) {
 		User user = userRepository.findByUserId(loginRequest.getUserId())
-			.orElseThrow(() -> new BadCredentialsException("사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new BadCredentialsException("아이디 또는 비밀번호가 틀렸습니다."));
 
 		if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-			throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+			throw new BadCredentialsException("아이디 또는 비밀번호가 틀렸습니다.");
 		}
 
 		String token = jwtTokenProvider.createToken(user.getUserId());
+
 		return LoginResponse.of(token);
 	}
 }
