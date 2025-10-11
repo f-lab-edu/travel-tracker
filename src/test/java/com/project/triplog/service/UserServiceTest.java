@@ -10,14 +10,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.project.triplog.domain.User;
 import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.exception.DuplicationException;
-import com.project.triplog.exception.EmailVerifiedException;
+import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
+import com.project.triplog.security.JwtTokenProvider;
 
 class UserServiceTest {
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private EmailVerificationService emailVerificationService;
+	private JwtTokenProvider jwtTokenProvider;
 	private UserService userService;
 
 	@BeforeEach
@@ -25,7 +27,8 @@ class UserServiceTest {
 		userRepository = mock(UserRepository.class);
 		passwordEncoder = mock(PasswordEncoder.class);
 		emailVerificationService = mock(EmailVerificationService.class);
-		userService = new UserService(userRepository, passwordEncoder, emailVerificationService);
+		jwtTokenProvider = mock(JwtTokenProvider.class);
+		userService = new UserService(userRepository, passwordEncoder, emailVerificationService, jwtTokenProvider);
 	}
 
 	@Test
@@ -75,7 +78,7 @@ class UserServiceTest {
 		doNothing().when(emailVerificationService).checkVerified(anyString());
 
 		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(DuplicationException.class)
+			.isInstanceOf(ApiException.class)
 			.hasMessage("이미 존재하는 사용자 이름입니다.");
 	}
 
@@ -89,7 +92,7 @@ class UserServiceTest {
 		doNothing().when(emailVerificationService).checkVerified(anyString());
 
 		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(DuplicationException.class)
+			.isInstanceOf(ApiException.class)
 			.hasMessage("이미 존재하는 이메일입니다.");
 	}
 
@@ -113,11 +116,11 @@ class UserServiceTest {
 	void shouldThrowExceptionWhenEmailNotVerified() {
 		JoinRequest joinRequest = new JoinRequest("newUser", "홍길동", "unverified@example.com", "password123");
 
-		doThrow(new EmailVerifiedException())
+		doThrow(new ApiException(ErrorCode.EMAIL_NOT_VERIFIED))
 			.when(emailVerificationService).checkVerified(joinRequest.getEmail());
 
 		assertThatThrownBy(() -> userService.join(joinRequest))
-			.isInstanceOf(EmailVerifiedException.class);
+			.isInstanceOf(ApiException.class);
 	}
 
 }

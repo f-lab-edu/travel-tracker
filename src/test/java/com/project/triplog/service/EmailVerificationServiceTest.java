@@ -14,8 +14,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 
 import com.project.triplog.domain.EmailVerification;
 import com.project.triplog.dto.EmailRequest;
-import com.project.triplog.exception.EmailSendException;
-import com.project.triplog.exception.EmailVerifiedException;
+import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.repository.EmailVerificationRepository;
 
 class EmailVerificationServiceTest {
@@ -66,7 +65,7 @@ class EmailVerificationServiceTest {
 		when(emailVerificationRepository.findByEmail(email)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> emailVerificationService.verifyToken(email, token))
-			.isInstanceOf(EmailVerifiedException.class);
+			.isInstanceOf(ApiException.class);
 	}
 
 	@Test
@@ -80,7 +79,7 @@ class EmailVerificationServiceTest {
 		when(emailVerificationRepository.findByEmail(email)).thenReturn(Optional.of(verification));
 
 		assertThatThrownBy(() -> emailVerificationService.verifyToken(email, wrongToken))
-			.isInstanceOf(EmailVerifiedException.class);
+			.isInstanceOf(ApiException.class);
 	}
 
 	@Test
@@ -103,7 +102,7 @@ class EmailVerificationServiceTest {
 			.when(mailSender).send(any(SimpleMailMessage.class));
 
 		assertThatThrownBy(() -> emailVerificationService.sendVerificationEmail(request))
-			.isInstanceOf(EmailSendException.class);
+			.isInstanceOf(ApiException.class);
 	}
 
 	@Test
@@ -115,7 +114,7 @@ class EmailVerificationServiceTest {
 		when(emailVerificationRepository.findByEmail(email)).thenReturn(Optional.of(verification));
 
 		assertThatThrownBy(() -> emailVerificationService.checkVerified(email))
-			.isInstanceOf(EmailVerifiedException.class);
+			.isInstanceOf(ApiException.class);
 	}
 
 	@Test

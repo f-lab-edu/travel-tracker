@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.EmailVerification;
 import com.project.triplog.dto.EmailRequest;
-import com.project.triplog.exception.EmailSendException;
-import com.project.triplog.exception.EmailVerifiedException;
+import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.EmailVerificationRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,12 +35,12 @@ public class EmailVerificationService {
 	public boolean verifyToken(String email, String token) {
 		Optional<EmailVerification> emailVerificationOpt = emailVerificationRepository.findByEmail(email);
 		if (emailVerificationOpt.isEmpty()) {
-			throw new EmailVerifiedException();
+			throw new ApiException(ErrorCode.EMAIL_NOT_VERIFIED);
 		}
 
 		EmailVerification emailVerification = emailVerificationOpt.get();
 		if (!emailVerification.getToken().equals(token)) {
-			throw new EmailVerifiedException();
+			throw new ApiException(ErrorCode.EMAIL_NOT_VERIFIED);
 		}
 		emailVerification.completeVerification();
 		return true;
@@ -63,15 +63,15 @@ public class EmailVerificationService {
 			mailSender.send(message);
 		} catch (Exception e) {
 			log.error("Failed to send verification email to {}", emailRequest.getEmail());
-			throw new EmailSendException();
+			throw new ApiException(ErrorCode.EMAIL_SEND_FAILURE);
 		}
 	}
 
 	public void checkVerified(String email) {
 		EmailVerification emailVerification = emailVerificationRepository.findByEmail(email)
-			.orElseThrow(() -> new EmailVerifiedException());
+			.orElseThrow(() -> new ApiException(ErrorCode.EMAIL_NOT_VERIFIED));
 		if (!emailVerification.isVerified()) {
-			throw new EmailVerifiedException();
+			throw new ApiException(ErrorCode.EMAIL_NOT_VERIFIED);
 		}
 	}
 

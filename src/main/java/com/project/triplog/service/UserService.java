@@ -8,7 +8,8 @@ import com.project.triplog.domain.User;
 import com.project.triplog.dto.JoinRequest;
 import com.project.triplog.dto.LoginRequest;
 import com.project.triplog.dto.LoginResponse;
-import com.project.triplog.exception.DuplicationException;
+import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
 import com.project.triplog.security.JwtTokenProvider;
 
@@ -29,10 +30,10 @@ public class UserService {
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
 		if (isExistUsername(joinRequest.getUsername())) {
-			throw new DuplicationException("이미 존재하는 사용자 이름입니다.");
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 사용자 이름입니다.");
 		}
 		if (isExistEmail(joinRequest.getEmail())) {
-			throw new DuplicationException("이미 존재하는 이메일입니다.");
+			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 이메일입니다.");
 		}
 
 		String newPassword = encodingPassword(joinRequest.getPassword());

@@ -13,8 +13,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	@ExceptionHandler(BaseException.class)
-	public ResponseEntity<ErrorResponse> handleBaseException(BaseException exception) {
+	@ExceptionHandler(ApiException.class)
+	public ResponseEntity<ErrorResponse> handleApiException(ApiException exception) {
 		ErrorResponse errorResponse = ErrorResponse.of(exception.getStatus(), exception.getErrorCode(),
 			exception.getMessage());
 
