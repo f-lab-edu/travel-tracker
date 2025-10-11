@@ -9,6 +9,9 @@ import com.project.triplog.dto.EmailCheckRequest;
 import com.project.triplog.dto.EmailRequest;
 import com.project.triplog.dto.EmailVerificationRequest;
 import com.project.triplog.dto.JoinRequest;
+
+import com.project.triplog.dto.LoginRequest;
+import com.project.triplog.dto.LoginResponse;
 import com.project.triplog.dto.UserIdCheckRequest;
 import com.project.triplog.service.EmailVerificationService;
 import com.project.triplog.service.UserService;
@@ -52,5 +55,11 @@ public class UserController {
 	public ResponseEntity<Void> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
 		emailVerificationService.verifyToken(request.getEmail(), request.getToken());
 		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/users/login")
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+		LoginResponse loginResponse = userService.login(loginRequest);
+		return ResponseEntity.ok(loginResponse);
 	}
 }
