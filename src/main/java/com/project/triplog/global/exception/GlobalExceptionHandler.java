@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.project.triplog.global.response.ErrorResponse;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(ApiException.class)
