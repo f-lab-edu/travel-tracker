@@ -36,7 +36,6 @@ public class UserController {
 	@PostMapping("/users/join")
 	public ResponseEntity<ApiResponse<Void>> join(@Valid @RequestBody JoinRequest joinRequest) {
 		userService.join(joinRequest);
-		// 회원가입은 리소스 생성이므로 201 Created가 더 적절
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.success("회원가입이 완료되었습니다"));
 	}
@@ -50,13 +49,12 @@ public class UserController {
 	@GetMapping("/users/email/verification")
 	public ApiResponse<Void> verificationEmail(@RequestParam String email, @RequestParam String token) {
 		emailVerificationService.verifyToken(email, token);
-		// 이메일 인증은 단순 확인이므로 200 OK가 적절
 		return ApiResponse.success("이메일 인증이 완료되었습니다");
 	}
 
 	@PostMapping("/users/login")
 	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
 		LoginResponse loginResponse = userService.login(loginRequest);
-		return ApiResponse.success("로그인이 성공적으로 완료되었습니다", loginResponse);
+		return ApiResponse.success("로그인이 완료되었습니다", loginResponse);
 	}
 }

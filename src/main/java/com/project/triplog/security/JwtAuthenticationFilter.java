@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -19,14 +20,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String HEADER_STRING = "Authorization";
 
 	private final JwtTokenProvider jwtTokenProvider;
+	private final CustomUserDetailService userDetailService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 		String token = resolveToken(request);
 		if (token != null && jwtTokenProvider.validateToken(token)) {
-			String username = jwtTokenProvider.getUsername(token);
-			Authentication auth = new UsernamePasswordAuthenticationToken(username, null, null);
+			String userId = jwtTokenProvider.getUserId(token);
+			UserDetails userDetails = userDetailService.loadUserByUsername(userId);
+
+			Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null,
+				userDetails.getAuthorities());
 			SecurityContextHolder.getContext().setAuthentication(auth);
 		}
 		filterChain.doFilter(request, response);

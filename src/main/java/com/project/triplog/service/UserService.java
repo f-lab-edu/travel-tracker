@@ -8,7 +8,7 @@ import com.project.triplog.domain.User;
 import com.project.triplog.dto.user.JoinRequest;
 import com.project.triplog.dto.user.LoginRequest;
 import com.project.triplog.dto.user.LoginResponse;
-import com.project.triplog.global.exception.ApiException;
+import com.project.triplog.global.exception.CustomException;
 import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;
 import com.project.triplog.security.JwtTokenProvider;
@@ -24,16 +24,16 @@ public class UserService {
 	private final JwtTokenProvider jwtTokenProvider;
 
 	public boolean isExistUsername(String username) {
-		return userRepository.existsByUsername(username);
+		return userRepository.existsByUserId(username);
 	}
 
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
-		if (isExistUsername(joinRequest.getUsername())) {
-			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 사용자 이름입니다.");
+		if (isExistUsername(joinRequest.getUserId())) {
+			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
 		}
-		if (isExistEmail(joinRequest.getEmail())) {
-			throw new ApiException(ErrorCode.DUPLICATION, "이미 존재하는 이메일입니다.");
+		if (userRepository.existsByEmail(joinRequest.getEmail())) {
+			throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
 		}
 
 		String newPassword = encodingPassword(joinRequest.getPassword());
@@ -47,19 +47,18 @@ public class UserService {
 		return passwordEncoder.encode(password);
 	}
 
-	private boolean isExistEmail(String email) {
-		return userRepository.existsByEmail(email);
-	}
-
 	public LoginResponse login(LoginRequest loginRequest) {
-		User user = userRepository.findByUsername(loginRequest.getUsername())
-			.orElseThrow(() -> new BadCredentialsException("사용자를 찾을 수 없습니다."));
+		User user = userRepository.findByUserId(loginRequest.getUserId())
+			.orElseThrow(() -> new BadCredentialsException("아이디 또는 비밀번호가 틀렸습니다."));
 
 		if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-			throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+			throw new BadCredentialsException("아이디 또는 비밀번호가 틀렸습니다.");
 		}
 
-		String token = jwtTokenProvider.createToken(user.getEmail());
-		return LoginResponse.of(token);
+		String token = jwtTokenProvider.generateToken(user.getUserId());
+
+		return LoginResponse.builder()
+			.token(token)
+			.build();
 	}
 }
