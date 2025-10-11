@@ -1,4 +1,4 @@
-package com.project.triplog.dto;
+package com.project.triplog.dto.user;
 
 import lombok.Getter;
 

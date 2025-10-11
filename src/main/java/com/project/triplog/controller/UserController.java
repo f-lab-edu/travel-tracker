@@ -1,5 +1,6 @@
 package com.project.triplog.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,10 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.triplog.dto.EmailRequest;
-import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.dto.LoginRequest;
-import com.project.triplog.dto.LoginResponse;
+import com.project.triplog.dto.user.EmailRequest;
+import com.project.triplog.dto.user.JoinRequest;
+import com.project.triplog.dto.user.LoginRequest;
+import com.project.triplog.dto.user.LoginResponse;
+import com.project.triplog.global.response.ApiResponse;
 import com.project.triplog.service.EmailVerificationService;
 import com.project.triplog.service.UserService;
 
@@ -22,36 +24,39 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final EmailVerificationService emailVerificationService;
+	private final UserService userService;
+	private final EmailVerificationService emailVerificationService;
 
-    @GetMapping("/users/validation")
-    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
-        boolean isExists = userService.isExistUsername(username);
-        return ResponseEntity.ok(isExists);
-    }
+	@GetMapping("/users/validation")
+	public ApiResponse<Boolean> checkUsername(@RequestParam String username) {
+		boolean isExists = userService.isExistUsername(username);
+		return ApiResponse.success("사용자명 중복 검사가 완료되었습니다", isExists);
+	}
 
-    @PostMapping("/users/join")
-    public ResponseEntity join(@Valid @RequestBody JoinRequest joinRequest) {
-        userService.join(joinRequest);
-        return ResponseEntity.ok().build();
-    }
+	@PostMapping("/users/join")
+	public ResponseEntity<ApiResponse<Void>> join(@Valid @RequestBody JoinRequest joinRequest) {
+		userService.join(joinRequest);
+		// 회원가입은 리소스 생성이므로 201 Created가 더 적절
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(ApiResponse.success("회원가입이 완료되었습니다"));
+	}
 
-    @PostMapping("/users/email/verification")
-    public ResponseEntity sendVerificationEmail(@RequestBody EmailRequest emailRequest) {
-        emailVerificationService.sendVerificationEmail(emailRequest);
-        return ResponseEntity.ok().build();
-    }
+	@PostMapping("/users/email/verification")
+	public ApiResponse<Void> sendVerificationEmail(@RequestBody EmailRequest emailRequest) {
+		emailVerificationService.sendVerificationEmail(emailRequest);
+		return ApiResponse.success("인증 이메일이 발송되었습니다");
+	}
 
 	@GetMapping("/users/email/verification")
-	public ResponseEntity verificationEmail(@RequestParam String email, @RequestParam String token) {
+	public ApiResponse<Void> verificationEmail(@RequestParam String email, @RequestParam String token) {
 		emailVerificationService.verifyToken(email, token);
-		return ResponseEntity.ok().build();
+		// 이메일 인증은 단순 확인이므로 200 OK가 적절
+		return ApiResponse.success("이메일 인증이 완료되었습니다");
 	}
 
 	@PostMapping("/users/login")
-	public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest) {
+	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
 		LoginResponse loginResponse = userService.login(loginRequest);
-		return ResponseEntity.ok(loginResponse);
+		return ApiResponse.success("로그인이 성공적으로 완료되었습니다", loginResponse);
 	}
 }

@@ -13,7 +13,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.project.triplog.domain.EmailVerification;
-import com.project.triplog.dto.EmailRequest;
+import com.project.triplog.dto.user.EmailRequest;
 import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.repository.EmailVerificationRepository;
 

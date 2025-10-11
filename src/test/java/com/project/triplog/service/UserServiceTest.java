@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.project.triplog.domain.User;
-import com.project.triplog.dto.JoinRequest;
+import com.project.triplog.dto.user.JoinRequest;
 import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;

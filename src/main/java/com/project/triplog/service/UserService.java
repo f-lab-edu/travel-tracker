@@ -5,9 +5,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.User;
-import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.dto.LoginRequest;
-import com.project.triplog.dto.LoginResponse;
+import com.project.triplog.dto.user.JoinRequest;
+import com.project.triplog.dto.user.LoginRequest;
+import com.project.triplog.dto.user.LoginResponse;
 import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.UserRepository;

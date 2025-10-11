@@ -10,7 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.project.triplog.domain.EmailVerification;
-import com.project.triplog.dto.EmailRequest;
+import com.project.triplog.dto.user.EmailRequest;
 import com.project.triplog.global.exception.ApiException;
 import com.project.triplog.global.exception.ErrorCode;
 import com.project.triplog.repository.EmailVerificationRepository;
