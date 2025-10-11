@@ -22,14 +22,18 @@ public class UserService {
 	private final EmailVerificationService emailVerificationService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-	public boolean isExistUsername(String username) {
-		return userRepository.existsByUsername(username);
+	public boolean isExistUserId(String userId) {
+		return userRepository.existsByUserId(userId);
+	}
+
+	public boolean isExistEmail(String email) {
+		return userRepository.existsByEmail(email);
 	}
 
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
-		if (isExistUsername(joinRequest.getUsername())) {
-			throw new DuplicationException("이미 존재하는 사용자 이름입니다.");
+		if (isExistUserId(joinRequest.getUserId())) {
+			throw new DuplicationException("이미 존재하는 사용자 아이디입니다.");
 		}
 		if (isExistEmail(joinRequest.getEmail())) {
 			throw new DuplicationException("이미 존재하는 이메일입니다.");
@@ -46,19 +50,15 @@ public class UserService {
 		return passwordEncoder.encode(password);
 	}
 
-	private boolean isExistEmail(String email) {
-		return userRepository.existsByEmail(email);
-	}
-
 	public LoginResponse login(LoginRequest loginRequest) {
-		User user = userRepository.findByUsername(loginRequest.getUsername())
+		User user = userRepository.findByUserId(loginRequest.getUserId())
 			.orElseThrow(() -> new BadCredentialsException("사용자를 찾을 수 없습니다."));
 
 		if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
 			throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
 		}
 
-		String token = jwtTokenProvider.createToken(user.getEmail());
+		String token = jwtTokenProvider.createToken(user.getUserId());
 		return LoginResponse.of(token);
 	}
 }

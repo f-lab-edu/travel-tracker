@@ -17,8 +17,8 @@ public class JwtTokenProvider {
 	@Value("${jwt.expiration-time}")
 	private long expirationTime;
 
-	public String createToken(String username) {
-		Claims claims = Jwts.claims().setSubject(username);
+	public String createToken(String userId) {
+		Claims claims = Jwts.claims().setSubject(userId);
 		Date now = new Date();
 		Date expiry = new Date(now.getTime() + expirationTime);
 
@@ -30,7 +30,7 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
-	public String getUsername(String token) {
+	public String getUserId(String token) {
 		return Jwts.parser().setSigningKey(secretKey)
 			.parseClaimsJws(token)
 			.getBody()
