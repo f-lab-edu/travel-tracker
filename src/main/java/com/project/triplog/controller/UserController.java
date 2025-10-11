@@ -1,14 +1,13 @@
 package com.project.triplog.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.triplog.dto.EmailCheckRequest;
 import com.project.triplog.dto.EmailRequest;
+import com.project.triplog.dto.EmailVerificationRequest;
 import com.project.triplog.dto.JoinRequest;
 import com.project.triplog.dto.UsernameCheckRequest;
 import com.project.triplog.service.EmailVerificationService;
@@ -43,15 +42,15 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/users/email/verification")
-	public ResponseEntity<Void> sendVerificationEmail(@RequestBody EmailRequest emailRequest) {
+	@PostMapping("/users/email/request-verification")
+	public ResponseEntity<Void> requestEmailVerification(@RequestBody EmailRequest emailRequest) {
 		emailVerificationService.sendVerificationEmail(emailRequest);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/users/email/verification")
-	public ResponseEntity<Void> verificationEmail(@RequestParam String email, @RequestParam String token) {
-		emailVerificationService.verifyToken(email, token);
+	@PostMapping("/users/email/verification")
+	public ResponseEntity<Void> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+		emailVerificationService.verifyToken(request.getEmail(), request.getToken());
 		return ResponseEntity.ok().build();
 	}
 }
