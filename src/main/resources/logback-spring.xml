@@ -37,11 +37,16 @@
     <!-- 4. Root Logger 설정 -->
     <!-- 모든 환경에서 Console Appender는 항상 포함 -->
     <!-- dev 환경일 경우 File Appender도 추가 -->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
-        <springProfile name="dev">
-            <appender-ref ref="FILE"/>
-        </springProfile>
     </root>
+
+    <!-- dev 환경일 때만 root logger에 FILE appender 추가 -->
+    <springProfile name="dev">
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
 
 </configuration>
