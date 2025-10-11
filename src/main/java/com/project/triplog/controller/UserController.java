@@ -9,7 +9,7 @@ import com.project.triplog.dto.EmailCheckRequest;
 import com.project.triplog.dto.EmailRequest;
 import com.project.triplog.dto.EmailVerificationRequest;
 import com.project.triplog.dto.JoinRequest;
-import com.project.triplog.dto.UsernameCheckRequest;
+import com.project.triplog.dto.UserIdCheckRequest;
 import com.project.triplog.service.EmailVerificationService;
 import com.project.triplog.service.UserService;
 
@@ -24,9 +24,9 @@ public class UserController {
 	private final UserService userService;
 	private final EmailVerificationService emailVerificationService;
 
-	@PostMapping("/users/username/exists")
-	public ResponseEntity<Boolean> checkUsernameExists(@Valid @RequestBody UsernameCheckRequest request) {
-		boolean isExists = userService.isExistUsername(request.getUsername());
+	@PostMapping("/users/userid/exists")
+	public ResponseEntity<Boolean> checkUserIdExists(@Valid @RequestBody UserIdCheckRequest request) {
+		boolean isExists = userService.isExistUserId(request.getUserId());
 		return ResponseEntity.ok(isExists);
 	}
 

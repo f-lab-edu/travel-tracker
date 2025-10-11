@@ -17,8 +17,8 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final EmailVerificationService emailVerificationService;
 
-	public boolean isExistUsername(String username) {
-		return userRepository.existsByUsername(username);
+	public boolean isExistUserId(String userId) {
+		return userRepository.existsByUserId(userId);
 	}
 
 	public boolean isExistEmail(String email) {
@@ -27,8 +27,8 @@ public class UserService {
 
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
-		if (isExistUsername(joinRequest.getUsername())) {
-			throw new DuplicationException("이미 존재하는 사용자 이름입니다.");
+		if (isExistUserId(joinRequest.getUserId())) {
+			throw new DuplicationException("이미 존재하는 사용자 아이디입니다.");
 		}
 		if (isExistEmail(joinRequest.getEmail())) {
 			throw new DuplicationException("이미 존재하는 이메일입니다.");
