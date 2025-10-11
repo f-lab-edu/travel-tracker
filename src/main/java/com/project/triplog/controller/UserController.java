@@ -1,16 +1,17 @@
 package com.project.triplog.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.triplog.dto.EmailCheckRequest;
 import com.project.triplog.dto.EmailRequest;
+import com.project.triplog.dto.EmailVerificationRequest;
 import com.project.triplog.dto.JoinRequest;
 import com.project.triplog.dto.LoginRequest;
 import com.project.triplog.dto.LoginResponse;
+import com.project.triplog.dto.UserIdCheckRequest;
 import com.project.triplog.service.EmailVerificationService;
 import com.project.triplog.service.UserService;
 
@@ -22,35 +23,41 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final EmailVerificationService emailVerificationService;
+	private final UserService userService;
+	private final EmailVerificationService emailVerificationService;
 
-    @GetMapping("/users/validation")
-    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
-        boolean isExists = userService.isExistUsername(username);
-        return ResponseEntity.ok(isExists);
-    }
+	@PostMapping("/users/userid/exists")
+	public ResponseEntity<Boolean> checkUserIdExists(@Valid @RequestBody UserIdCheckRequest request) {
+		boolean isExists = userService.isExistUserId(request.getUserId());
+		return ResponseEntity.ok(isExists);
+	}
 
-    @PostMapping("/users/join")
-    public ResponseEntity join(@Valid @RequestBody JoinRequest joinRequest) {
-        userService.join(joinRequest);
-        return ResponseEntity.ok().build();
-    }
+	@PostMapping("/users/email/exists")
+	public ResponseEntity<Boolean> checkEmailExists(@Valid @RequestBody EmailCheckRequest request) {
+		boolean isExists = userService.isExistEmail(request.getEmail());
+		return ResponseEntity.ok(isExists);
+	}
 
-    @PostMapping("/users/email/verification")
-    public ResponseEntity sendVerificationEmail(@RequestBody EmailRequest emailRequest) {
-        emailVerificationService.sendVerificationEmail(emailRequest);
-        return ResponseEntity.ok().build();
-    }
+	@PostMapping("/users/join")
+	public ResponseEntity<Void> join(@Valid @RequestBody JoinRequest joinRequest) {
+		userService.join(joinRequest);
+		return ResponseEntity.ok().build();
+	}
 
-	@GetMapping("/users/email/verification")
-	public ResponseEntity verificationEmail(@RequestParam String email, @RequestParam String token) {
-		emailVerificationService.verifyToken(email, token);
+	@PostMapping("/users/email/request-verification")
+	public ResponseEntity<Void> requestEmailVerification(@RequestBody EmailRequest emailRequest) {
+		emailVerificationService.sendVerificationEmail(emailRequest);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/users/email/verification")
+	public ResponseEntity<Void> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+		emailVerificationService.verifyToken(request.getEmail(), request.getToken());
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/users/login")
-	public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest) {
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
 		LoginResponse loginResponse = userService.login(loginRequest);
 		return ResponseEntity.ok(loginResponse);
 	}

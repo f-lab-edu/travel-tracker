@@ -24,7 +24,7 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String username;
+	private String userId;
 	private String name;
 	private String email;
 	private String password;
@@ -33,7 +33,7 @@ public class User {
 
 	public static User from(JoinRequest joinRequest, String newPassword) {
 		User user = new User();
-		user.username = joinRequest.getUsername();
+		user.userId = joinRequest.getUserId();
 		user.name = joinRequest.getName();
 		user.email = joinRequest.getEmail();
 		user.password = newPassword;
