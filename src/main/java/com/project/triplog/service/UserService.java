@@ -21,6 +21,10 @@ public class UserService {
 		return userRepository.existsByUsername(username);
 	}
 
+	public boolean isExistEmail(String email) {
+		return userRepository.existsByEmail(email);
+	}
+
 	public void join(JoinRequest joinRequest) {
 		emailVerificationService.checkVerified(joinRequest.getEmail());
 		if (isExistUsername(joinRequest.getUsername())) {
@@ -39,9 +43,5 @@ public class UserService {
 
 	private String encodingPassword(String password) {
 		return passwordEncoder.encode(password);
-	}
-
-	private boolean isExistEmail(String email) {
-		return userRepository.existsByEmail(email);
 	}
 }
